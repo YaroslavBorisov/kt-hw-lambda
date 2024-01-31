@@ -83,14 +83,14 @@ object ChatService {
         val sb = StringBuilder()
         chats.forEach {
             sb.append("Чат: ${it.title}\n")
-                .append(if (it.messages.size == 0) "Нет сообщений" else it.messages.filter { msg: Message -> msg.date == it.messages.maxOf { it.date } })
+                .append(it.messages.maxByOrNull { it.date } ?: "Нет сообщений")
                 .append("\n")
         }
         return sb.toString()
     }
 
     fun getUserMessages(chatId: Int, userId: Int, count: Int): List<Message> {
-        return findChat(chatId).messages.filter { it.userId == userId }.sortedByDescending { it.date }.subList(0, count).markAsRead()
+        return findChat(chatId).messages.asSequence().filter { it.userId == userId }.sortedByDescending { it.date }.take(count).toList().markAsRead()
     }
 
     fun List<Message>.markAsRead(): List<Message>
